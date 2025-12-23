@@ -1,0 +1,166 @@
+<?php
+/**
+ * Plugin Name: {{ module_name }}
+ * Plugin URI:
+ * Description: Module {{ module_name }} - Custom Post Type avec champs ACF et templates
+ * Version: 1.0.0
+ * Author: WP Generator
+ * Author URI:
+ * License: GPL v2 or later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain: {{ slug }}
+ * Domain Path: /languages
+ * Requires at least: 5.8
+ * Requires PHP: 7.4
+ *
+ * Généré automatiquement le {{ generated_at }}
+ */
+
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+// Définition des constantes
+define('{{ snake_name | upper }}_VERSION', '1.0.0');
+define('{{ snake_name | upper }}_PLUGIN_DIR', plugin_dir_path(__FILE__));
+define('{{ snake_name | upper }}_PLUGIN_URL', plugin_dir_url(__FILE__));
+define('{{ snake_name | upper }}_PLUGIN_BASENAME', plugin_basename(__FILE__));
+
+/**
+ * Vérifie si ACF est actif
+ */
+function {{ snake_name }}_check_acf() {
+    if (!class_exists('ACF')) {
+        add_action('admin_notices', '{{ snake_name }}_acf_notice');
+        return false;
+    }
+    return true;
+}
+
+/**
+ * Notice si ACF n'est pas installé
+ */
+function {{ snake_name }}_acf_notice() {
+    ?>
+    <div class="notice notice-warning is-dismissible">
+        <p>
+            <strong><?php echo esc_html__('{{ module_name }}', '{{ slug }}'); ?>:</strong>
+            <?php echo esc_html__('Ce plugin nécessite Advanced Custom Fields (ACF) pour fonctionner correctement.', '{{ slug }}'); ?>
+            <a href="<?php echo esc_url(admin_url('plugin-install.php?s=advanced+custom+fields&tab=search&type=term')); ?>">
+                <?php echo esc_html__('Installer ACF', '{{ slug }}'); ?>
+            </a>
+        </p>
+    </div>
+    <?php
+}
+
+/**
+ * Charge les fichiers du plugin
+ */
+function {{ snake_name }}_init() {
+    // Charger le CPT
+    require_once {{ snake_name | upper }}_PLUGIN_DIR . 'includes/cpt-{{ slug }}.php';
+
+    // Charger le shortcode
+    require_once {{ snake_name | upper }}_PLUGIN_DIR . 'includes/shortcode-{{ slug }}.php';
+
+    // Vérifier ACF
+    {{ snake_name }}_check_acf();
+}
+add_action('plugins_loaded', '{{ snake_name }}_init');
+
+/**
+ * Charge les fichiers ACF JSON
+ */
+function {{ snake_name }}_acf_json_load_point($paths) {
+    $paths[] = {{ snake_name | upper }}_PLUGIN_DIR . 'acf-json';
+    return $paths;
+}
+add_filter('acf/settings/load_json', '{{ snake_name }}_acf_json_load_point');
+
+/**
+ * Définit le chemin de sauvegarde ACF JSON
+ */
+function {{ snake_name }}_acf_json_save_point($path) {
+    // Uniquement pour les groupes de ce module
+    if (isset($_POST['acf_field_group']) &&
+        strpos($_POST['acf_field_group']['title'], '{{ module_name }}') !== false) {
+        return {{ snake_name | upper }}_PLUGIN_DIR . 'acf-json';
+    }
+    return $path;
+}
+add_filter('acf/settings/save_json', '{{ snake_name }}_acf_json_save_point');
+
+/**
+ * Charge les templates personnalisés
+ */
+function {{ snake_name }}_template_include($template) {
+    if (is_singular('{{ slug }}')) {
+        $custom_template = {{ snake_name | upper }}_PLUGIN_DIR . 'templates/single-{{ slug }}.php';
+        if (file_exists($custom_template)) {
+            return $custom_template;
+        }
+    }
+
+    if (is_post_type_archive('{{ slug }}')) {
+        $custom_template = {{ snake_name | upper }}_PLUGIN_DIR . 'templates/archive-{{ slug }}.php';
+        if (file_exists($custom_template)) {
+            return $custom_template;
+        }
+    }
+
+    return $template;
+}
+add_filter('template_include', '{{ snake_name }}_template_include');
+
+/**
+ * Enregistre les styles du plugin
+ */
+function {{ snake_name }}_enqueue_styles() {
+    if (is_singular('{{ slug }}') || is_post_type_archive('{{ slug }}')) {
+        wp_enqueue_style(
+            '{{ slug }}-styles',
+            {{ snake_name | upper }}_PLUGIN_URL . 'assets/css/{{ slug }}.css',
+            array(),
+            {{ snake_name | upper }}_VERSION
+        );
+    }
+}
+add_action('wp_enqueue_scripts', '{{ snake_name }}_enqueue_styles');
+
+/**
+ * Activation du plugin
+ */
+function {{ snake_name }}_activate() {
+    // Enregistrer le CPT
+    require_once {{ snake_name | upper }}_PLUGIN_DIR . 'includes/cpt-{{ slug }}.php';
+    {{ snake_name }}_register_post_type();
+
+    // Ajouter les capacités
+    {{ snake_name }}_add_capabilities();
+
+    // Flush les règles
+    flush_rewrite_rules();
+}
+register_activation_hook(__FILE__, '{{ snake_name }}_activate');
+
+/**
+ * Désactivation du plugin
+ */
+function {{ snake_name }}_deactivate() {
+    flush_rewrite_rules();
+}
+register_deactivation_hook(__FILE__, '{{ snake_name }}_deactivate');
+
+/**
+ * Ajoute un lien vers les réglages dans la liste des plugins
+ */
+function {{ snake_name }}_plugin_action_links($links) {
+    $custom_links = array(
+        '<a href="' . esc_url(admin_url('edit.php?post_type={{ slug }}')) . '">' .
+            esc_html__('Gérer', '{{ slug }}') .
+        '</a>',
+    );
+    return array_merge($custom_links, $links);
+}
+add_filter('plugin_action_links_' . {{ snake_name | upper }}_PLUGIN_BASENAME, '{{ snake_name }}_plugin_action_links');

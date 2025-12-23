@@ -1,0 +1,160 @@
+# {{ module_name }} - Module WordPress
+
+> Généré automatiquement le {{ generated_at }}
+
+## Description
+
+Ce module WordPress ajoute un Custom Post Type "{{ module_name }}" avec les fonctionnalités suivantes :
+
+- **Custom Post Type** complet avec toutes les capacités
+- **Champs ACF** personnalisés
+- **Templates** single et archive
+- **Shortcodes** pour l'affichage
+
+## Champs disponibles
+
+| Nom | Type | Description |
+|-----|------|-------------|
+{% for field in fields %}
+| `{{ field.name }}` | {{ field.field_type }} | {{ field.label }} |
+{% endfor %}
+
+## Installation
+
+### Méthode 1 : Installation comme plugin (recommandé)
+
+1. Copiez le dossier `{{ slug }}` dans `/wp-content/plugins/`
+2. Activez le plugin dans **Extensions > Extensions installées**
+3. Assurez-vous que [ACF (Advanced Custom Fields)](https://www.advancedcustomfields.com/) est installé et activé
+
+### Méthode 2 : Installation dans le thème
+
+1. Copiez les fichiers dans votre thème :
+   - `includes/cpt-{{ slug }}.php` → `/wp-content/themes/votre-theme/includes/`
+   - `includes/shortcode-{{ slug }}.php` → `/wp-content/themes/votre-theme/includes/`
+   - `templates/*.php` → `/wp-content/themes/votre-theme/`
+   - `acf-json/*.json` → `/wp-content/themes/votre-theme/acf-json/`
+
+2. Ajoutez dans votre `functions.php` :
+
+```php
+// Charger le CPT {{ module_name }}
+require_once get_template_directory() . '/includes/cpt-{{ slug }}.php';
+require_once get_template_directory() . '/includes/shortcode-{{ slug }}.php';
+
+// Charger les champs ACF
+add_filter('acf/settings/load_json', function($paths) {
+    $paths[] = get_template_directory() . '/acf-json';
+    return $paths;
+});
+```
+
+## Utilisation
+
+### Dans l'administration
+
+Après activation, un nouveau menu "{{ module_name }}s" apparaît dans l'administration WordPress.
+
+### URLs
+
+- **Archive** : `{{ '{{' }} site_url {{ '}}' }}/{{ slug }}/`
+- **Single** : `{{ '{{' }} site_url {{ '}}' }}/{{ slug }}/nom-du-post/`
+
+### Shortcodes
+
+#### Liste des {{ module_name }}s
+
+```
+[{{ snake_name }}_list]
+```
+
+**Paramètres disponibles :**
+
+| Paramètre | Défaut | Description |
+|-----------|--------|-------------|
+| `limit` | 10 | Nombre de posts à afficher |
+| `orderby` | date | Critère de tri (date, title, rand, menu_order) |
+| `order` | DESC | Ordre de tri (ASC, DESC) |
+| `columns` | 3 | Nombre de colonnes |
+| `class` | - | Classe CSS personnalisée |
+
+**Exemples :**
+
+```
+[{{ snake_name }}_list limit="6" columns="2"]
+[{{ snake_name }}_list orderby="title" order="ASC"]
+[{{ snake_name }}_list limit="3" class="my-custom-class"]
+```
+
+#### {{ module_name }} unique
+
+```
+[{{ snake_name }}_single id="123"]
+```
+
+### Dans le code PHP
+
+```php
+// Récupérer les {{ module_name }}s
+${{ snake_name }}s = get_posts(array(
+    'post_type' => '{{ slug }}',
+    'posts_per_page' => -1,
+));
+
+// Récupérer un champ ACF
+{% for field in fields %}
+${{ field.name }} = get_field('{{ field.name }}', $post_id);
+{% endfor %}
+```
+
+### API REST
+
+Le CPT est accessible via l'API REST WordPress :
+
+```
+GET /wp-json/wp/v2/{{ slug }}
+GET /wp-json/wp/v2/{{ slug }}/{id}
+```
+
+## Structure des fichiers
+
+```
+{{ slug }}/
+├── {{ slug }}.php              # Fichier principal du plugin
+├── README.md                   # Ce fichier
+├── acf-json/                   # Définitions des champs ACF
+│   └── group_*.json
+├── includes/
+│   ├── cpt-{{ slug }}.php      # Custom Post Type
+│   └── shortcode-{{ slug }}.php # Shortcodes
+└── templates/
+    ├── single-{{ slug }}.php   # Template single
+    └── archive-{{ slug }}.php  # Template archive
+```
+
+## Personnalisation
+
+### Modifier les templates
+
+Copiez les fichiers de `/templates/` dans votre thème pour les personnaliser.
+WordPress utilisera automatiquement les templates du thème s'ils existent.
+
+### Ajouter des champs ACF
+
+1. Allez dans **ACF > Groupes de champs**
+2. Modifiez le groupe "Champs {{ module_name }}"
+3. Les modifications sont automatiquement sauvegardées dans `acf-json/`
+
+### Modifier le CSS
+
+Créez un fichier `assets/css/{{ slug }}.css` pour personnaliser l'apparence.
+
+## Dépendances
+
+- WordPress 5.8+
+- PHP 7.4+
+- [Advanced Custom Fields](https://www.advancedcustomfields.com/) (gratuit ou PRO)
+
+## Licence
+
+GPL v2 or later

@@ -1,0 +1,127 @@
+<?php
+/**
+ * Custom Post Type: {{ module_name }}
+ * Généré automatiquement le {{ generated_at }}
+ *
+ * @package {{ module_name }}
+ */
+
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+/**
+ * Enregistre le Custom Post Type {{ module_name }}
+ */
+function {{ snake_name }}_register_post_type() {
+    $labels = array(
+        'name'                  => _x('{{ module_name }}s', 'Post type general name', '{{ slug }}'),
+        'singular_name'         => _x('{{ module_name }}', 'Post type singular name', '{{ slug }}'),
+        'menu_name'             => _x('{{ module_name }}s', 'Admin Menu text', '{{ slug }}'),
+        'name_admin_bar'        => _x('{{ module_name }}', 'Add New on Toolbar', '{{ slug }}'),
+        'add_new'               => __('Ajouter', '{{ slug }}'),
+        'add_new_item'          => __('Ajouter un {{ module_name }}', '{{ slug }}'),
+        'new_item'              => __('Nouveau {{ module_name }}', '{{ slug }}'),
+        'edit_item'             => __('Modifier le {{ module_name }}', '{{ slug }}'),
+        'view_item'             => __('Voir le {{ module_name }}', '{{ slug }}'),
+        'all_items'             => __('Tous les {{ module_name }}s', '{{ slug }}'),
+        'search_items'          => __('Rechercher des {{ module_name }}s', '{{ slug }}'),
+        'parent_item_colon'     => __('{{ module_name }} parent :', '{{ slug }}'),
+        'not_found'             => __('Aucun {{ module_name }} trouvé.', '{{ slug }}'),
+        'not_found_in_trash'    => __('Aucun {{ module_name }} dans la corbeille.', '{{ slug }}'),
+        'featured_image'        => _x('Image mise en avant', 'Overrides the "Featured Image" phrase', '{{ slug }}'),
+        'set_featured_image'    => _x('Définir l\'image mise en avant', 'Overrides the "Set featured image" phrase', '{{ slug }}'),
+        'remove_featured_image' => _x('Supprimer l\'image mise en avant', 'Overrides the "Remove featured image" phrase', '{{ slug }}'),
+        'use_featured_image'    => _x('Utiliser comme image mise en avant', 'Overrides the "Use as featured image" phrase', '{{ slug }}'),
+        'archives'              => _x('Archives des {{ module_name }}s', 'The post type archive label', '{{ slug }}'),
+        'insert_into_item'      => _x('Insérer dans le {{ module_name }}', 'Overrides the "Insert into post" phrase', '{{ slug }}'),
+        'uploaded_to_this_item' => _x('Téléversé vers ce {{ module_name }}', 'Overrides the "Uploaded to this post" phrase', '{{ slug }}'),
+        'filter_items_list'     => _x('Filtrer la liste des {{ module_name }}s', 'Screen reader text', '{{ slug }}'),
+        'items_list_navigation' => _x('Navigation de la liste des {{ module_name }}s', 'Screen reader text', '{{ slug }}'),
+        'items_list'            => _x('Liste des {{ module_name }}s', 'Screen reader text', '{{ slug }}'),
+    );
+
+    $capabilities = array(
+        'edit_post'             => 'edit_{{ snake_name }}',
+        'read_post'             => 'read_{{ snake_name }}',
+        'delete_post'           => 'delete_{{ snake_name }}',
+        'edit_posts'            => 'edit_{{ snake_name }}s',
+        'edit_others_posts'     => 'edit_others_{{ snake_name }}s',
+        'publish_posts'         => 'publish_{{ snake_name }}s',
+        'read_private_posts'    => 'read_private_{{ snake_name }}s',
+        'delete_posts'          => 'delete_{{ snake_name }}s',
+        'delete_private_posts'  => 'delete_private_{{ snake_name }}s',
+        'delete_published_posts'=> 'delete_published_{{ snake_name }}s',
+        'delete_others_posts'   => 'delete_others_{{ snake_name }}s',
+        'edit_private_posts'    => 'edit_private_{{ snake_name }}s',
+        'edit_published_posts'  => 'edit_published_{{ snake_name }}s',
+        'create_posts'          => 'create_{{ snake_name }}s',
+    );
+
+    $args = array(
+        'labels'              => $labels,
+        'public'              => true,
+        'publicly_queryable'  => true,
+        'show_ui'             => true,
+        'show_in_menu'        => true,
+        'query_var'           => true,
+        'rewrite'             => array('slug' => '{{ slug }}'),
+        'capability_type'     => array('{{ snake_name }}', '{{ snake_name }}s'),
+        'capabilities'        => $capabilities,
+        'map_meta_cap'        => true,
+        'has_archive'         => true,
+        'hierarchical'        => false,
+        'menu_position'       => 20,
+        'menu_icon'           => 'dashicons-admin-post',
+        'supports'            => array('title', 'editor', 'thumbnail', 'excerpt', 'custom-fields'),
+        'show_in_rest'        => true,
+        'rest_base'           => '{{ slug }}',
+    );
+
+    register_post_type('{{ slug }}', $args);
+}
+add_action('init', '{{ snake_name }}_register_post_type');
+
+/**
+ * Ajoute les capacités aux rôles administrateur et éditeur
+ */
+function {{ snake_name }}_add_capabilities() {
+    $roles = array('administrator', 'editor');
+
+    $capabilities = array(
+        'edit_{{ snake_name }}',
+        'read_{{ snake_name }}',
+        'delete_{{ snake_name }}',
+        'edit_{{ snake_name }}s',
+        'edit_others_{{ snake_name }}s',
+        'publish_{{ snake_name }}s',
+        'read_private_{{ snake_name }}s',
+        'delete_{{ snake_name }}s',
+        'delete_private_{{ snake_name }}s',
+        'delete_published_{{ snake_name }}s',
+        'delete_others_{{ snake_name }}s',
+        'edit_private_{{ snake_name }}s',
+        'edit_published_{{ snake_name }}s',
+        'create_{{ snake_name }}s',
+    );
+
+    foreach ($roles as $role_name) {
+        $role = get_role($role_name);
+        if ($role) {
+            foreach ($capabilities as $cap) {
+                $role->add_cap($cap);
+            }
+        }
+    }
+}
+register_activation_hook(dirname(__DIR__) . '/{{ slug }}.php', '{{ snake_name }}_add_capabilities');
+
+/**
+ * Flush les règles de réécriture à l'activation
+ */
+function {{ snake_name }}_flush_rewrite_rules() {
+    {{ snake_name }}_register_post_type();
+    flush_rewrite_rules();
+}
+register_activation_hook(dirname(__DIR__) . '/{{ slug }}.php', '{{ snake_name }}_flush_rewrite_rules');
+register_deactivation_hook(dirname(__DIR__) . '/{{ slug }}.php', 'flush_rewrite_rules');
