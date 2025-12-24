@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wp-gen"
+version = "1.0.0"
+description = "Générateur de modules WordPress complets"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "click>=8.1.0",
+    "Jinja2>=3.1.0",
+]
+
+[project.scripts]
+wp-gen = "generator:cli"
+
+[tool.setuptools.packages.find]
+where = ["."]
